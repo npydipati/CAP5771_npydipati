@@ -1,1 +1,21 @@
+Date: February 2, 2026
+Milestone 1 - Problem Formulation
 
+Today we completed the problem formulation for our energy poverty prediction project.
+
+Problem Definition:
+We defined the central question: Using historical economic, demographic, and infrastructure data from 1990 to 2020, can we identify which nations will have difficulty accessing electricity? In order to assist international development organizations in efficiently allocating resources, the objective is to anticipate the risk of energy poverty for 2024–2027 and categorize nations into three risk categories (severe, moderate, and minimal).
+
+Key Decisions Made:
+- The main source of data was chosen to be the World Bank World Development Indicators (6 datasets encompassing 271 countries/regions).
+- Selected a supervised learning strategy that combines classification (risk categories), exploration and prediction.
+- Defined time horizons: 1990–2020 for training, 2021–2023 for validation, and 2024–2027 for future projections.
+- GDP per capita, urban/rural population percentages, population density, total population, year, and country/region are the seven input features that were identified.
+- Established success criteria, such as 75% classification accuracy, the capacity to validate over time.
+
+Next Steps:
+- Document all data sources in detail.
+- Create data dictionary with variables and measurements.
+
+Reflection:
+The problem formulation made it clear what I wanted to achieve and why it was significant. Defining success criteria gives us clear goals to work toward. By training on historical data and testing on recent known outcomes, the temporal validation approach will show whether the model can actually forecast rather than just fit historical data.
