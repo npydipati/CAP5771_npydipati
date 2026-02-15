@@ -1,0 +1,145 @@
+Milestone 1 - Data Exploration
+
+Date: 12 Feb 2026
+- Generated histograms for all numeric variables.
+- Calculated skewness and kurtosis for each variable.
+- Created scatter plots showing electricity access vs
+    - GDP per capita (positive correlation)
+    - Urban population % (strong positive correlation)
+    - Population density (weak positive)
+    - Renewable energy % (strong negative correlation)
+    - Government effectiveness (strong positive)
+    - Total population (used log scale, very weak correlation).
+- Applied alpha=0.5 for transparency and added grid lines for the above scatter plots.
+- We computed correlation matrix for all numeric variables (excluding year) and created correlation heatmap. Then we generated horizontal bar chart showing correlations with electricity access.
+- Created histogram with KDE overlay for electricity access and generated box plot showing electricity access by income group.
+    - Created income categories from GDP per capita:
+        - Low: $0-5,000
+        - Lower-Middle: $5,000-15,000
+        - Upper-Middle: $15,000-50,000
+        - High: >$50,000  
+
+Date: 13 Feb 2026
+- Created 6 additional scatter plots exploring relationships beyond electricity:
+    - GDP vs Renewable Energy (negative)
+    - Urbanization vs Density (positive with outliers)
+    - GDP vs Governance (strong positive)
+    - Population vs Density (weak)
+    - Urbanization vs GDP (positive with bands)
+    - Renewable Energy vs Governance (scattered)
+- For Pairplot Analysis we selected 4 key variables: 
+    - electricity_access, 
+    - gdp_per_capita, 
+    - urban_population_percent,
+    -  renewable_energy_percent.
+- Using theese variables we generated pairplot with KDE on diagonal. Created 16 subplots showing all pairwise relationships
+- The Principal Component Analysis (PCA) is done by selecting all numeric features (dropped year), removed rows with missing values, standardized features using StandardScaler and applied PCA with 2 components
+- Calculated Euclidean Distance by selecting 4 features (GDP per capita, urban population %, population density, government effectiveness) and filtered data to most recent complete year and calculated pairwise Euclidean distances between all countries.
+
+## **Findings:**
+
+1. ### Histogram Analysis:
+- **Electricity Access** shows heavily left-skewed with massive spike at 100% and clear bimodal pattern: most countries either have near-universal access (>95%) or struggle with low access (<50%), with few in the middle transition zone while **GDP per capita** is extremely right skewed i.e. most countries are low-to-middle income; only small fraction of wealthy nations, indicating global income inequality.  **Urban Population Percent and Rural Population Percent** are relatively normal distribution and also **Government Effectiveness** is approximately normal distribution centered around 0 . **Population Density and Total Population** are extremely right-skewed while **Renewable Energy Percent** are heavily right-skewed with huge spike at 0-10%. 
+
+2. ### Skewness Analysis: 
+- Population density (9.74), total population (5.60), and GDP per capita (4.66) show extreme positive skewness requiring log transformation, while electricity access (-1.39) is moderately left-skewed. Government effectiveness (0.29), urban population (0.20), and rural population (-0.20) are nearly symmetrical and close to normal distributions, suitable for direct use in modeling without transformation.
+
+3. ### Kurtosis Analysis:
+- Population density (103.52), total population (37.90), and GDP per capita (33.96) have extremely high kurtosis indicating heavy tails with severe outliers (city-states, China/India, wealthy nations), while urban/rural population, renewable energy, and government effectiveness show negative kurtosis with flatter, lighter-tailed distributions and fewer extreme values.
+
+4. ### Scatter Plot Analysis:
+- Electricity Access vs GDP per Capita: Strong positive relationship—as GDP increases, electricity access improves significantly.
+- Electricity Access vs Urbanization: Very strong positive correlation—higher urbanization strongly predicts better electricity access. 
+- Electricity Access vs Population Density: Weak relationship - showing density alone doesn't predict access.
+- Electricity Access vs Renewable Energy : Strong negative correlation—countries with high renewable energy % tend to have LOW electricity access.
+- Electricity Access vs Government Effectiveness: Strong positive relationship—better governance correlates with better electricity access, showing governance quality matters significantly for infrastructure development.
+- Electricity Access vs Total Population: Very weak/no relationship—population size doesn't predict electricity access.
+
+5. ### Correlation Matrix Analysis: 
+- Strongest correlations are renewable energy and electricity access, urban population and electricity access, and government effectiveness and GDP, while total population shows near-zero correlation with all variables. Urban and rural populations are perfectly inversely correlated.
+
+6. ### Euclidean Distance Analysis:
+- Norway, Australia, Iceland, Germany, and Qatar are most similar to the USA (distances 0.64-0.88), all being wealthy, well-governed nations with advanced infrastructure, confirming that the nations share similar development patterns.
+
+7. ### Box Plot Analysis: 
+- Low-income countries show wide variation (median ~72%, IQR 35-95%) with many outliers, Lower-Middle income has high median (~97%) but extreme outliers down to 30%, while Upper-Middle and High-income countries achieve near-universal access (median 100%, tight IQR 93-100%) with minimal variation. The critical development threshold occurs between Lower-Middle and Upper-Middle income ($15,000+ GDP), where electricity access becomes consistently universal and variability disappears.
+
+8. ### Additional Scatter Plots Analysis: 
+- **GDP vs Renewable Energy**: Negative correlation - Higher GDP means lower renewable usage.
+- **Urbanization vs Density**: Strong positive correlation with most countries at low density, but extreme vertical spike at 90-100%.
+- **GDP vs Governance**: Strong positive correlation — Wealthy countries have good governance (+1.5 to +2.5) while poor countries have weak governance.
+- **Population vs Density**: No relationship - vertical clustering shows countries of all population sizes have wildly different densities
+- **Urbanization vs GDP**: Positive correlation with vertical bands — Countries at similar urbanization levels show vastly different wealth, with some nations achieving high GDP without full urbanization, while most wealthy nations are highly urbanized.
+- **Renewable Energy vs Governance**: No relationship -  well-governed and poorly-governed countries span 0-100% renewable usage, showing governance quality doesn't predict energy choices.
+
+8. ### PCA Projection: 
+PC1 (49.49% variance) represents overall development level (left = underdeveloped, right = developed), while PC2 (13.19% variance) captures development pathways. The main horizontal band shows typical development progression, the upper curved arc (PC2: +5 to +8) represents a unique trajectory likely from large developing nations and the lower right cluster (PC2: -2 to -6) indicates most likely wealthy outliers, demonstrating that not all countries follow the same development path.
+
+# Notes:
+
+## **Missing Values:**
+
+**Critical Finding - Data Quality Issue:**
+- Discovered an "Unnamed: 69" column in all datasets
+- This appears to be an artifact from the CSV import process (likely extra column in raw files)
+- Action : This column needs to be removed during preprocessing as it contains no useful data
+
+**Temporal Patterns:**
+- Data completeness improves dramatically over time
+- Pre-1990: Most indicators have substantial missing data
+- 1990-2020: Golden period with most complete data across all indicators
+- Post-2020: Some indicators (renewable energy, population density) show increased missingness
+- Decision: Focus modeling on 1990-2020 period for training to ensure data quality
+
+**Geographic Patterns:**
+- All 266 countries/regions present in metadata
+- Missing values don't appear to be concentrated in specific countries
+- Both developed and developing nations have data across most years
+
+**Renewable Energy Data:**
+   - Most incomplete indicator
+   - May need imputation or consider excluding from initial models
+   - Alternative: Use only years where renewable energy data is available
+
+**Government Effectiveness:**
+   - Only available from 1996 onwards
+   - Limits historical analysis but valuable for recent predictions
+   - Consider separate models with/without this variable
+
+## **Anomalies and Surprising Findings:**
+
+1. **Renewable Energy Paradox:**
+   - Strong negative correlation between renewable energy and electricity access was unexpected
+   - Requires careful interpretation: traditional biomass ≠ modern renewable electricity
+   - Will need to handle this variable carefully in modeling or consider excluding it
+
+2. **Population Density Surprise:**
+   - Expected population density to be more predictive
+   - Dense urban areas usually easier to electrify, but correlation weak
+   - May reflect that some dense rural areas (agricultural regions) lack infrastructure
+
+3. **Recent Data Gaps (2021-2023):**
+   - Some indicators becoming less complete in most recent years
+   - Likely due to reporting delays and COVID-19 disruptions
+   - Reinforces using 2021-2023 as validation period rather than training
+
+## **Behaviors requiring Future Attention:**
+
+1. **Time Period Selection:**
+   - Training data: 1990-2020 (30 years of relatively complete data)
+   - Validation data: 2021-2023 (recent outcomes to test predictions)
+   - Exclude pre-1990 due to excessive missing values
+
+2. **Variable Selection:**
+   - INCLUDE: GDP per capita, urban/rural population %, population density, total population, government effectiveness (from 1996)
+   - QUESTIONABLE: Renewable energy percent (strong but confounded with development level)
+   - EXCLUDE: Unnamed: 69 column
+
+3. **Missing Value Strategy:**
+   - For modeling, will drop rows with missing target (electricity_access)
+   - For predictors, consider multiple approaches:
+     * Option A: Complete case analysis (drop any row with missing predictors)
+     * Option B: Imputation using forward-fill, backward-fill, and interpolation for time series
+     * Option C: Separate models for different time periods based on data availability
+   - Decision deferred to preprocessing phase
+

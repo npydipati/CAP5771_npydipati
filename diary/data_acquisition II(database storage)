@@ -1,7 +1,7 @@
 Milestone 1 - Data Acquisition II (Database Storage)
 
 Date: February 10, 2026
-Today I designed and implemented a SQLite database to store all project data in a structured, queryable format.
+Today we designed and implemented a SQLite database to store all project data in a structured, queryable format.
 
 Database Schema Design:
 
