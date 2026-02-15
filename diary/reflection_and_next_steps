@@ -1,0 +1,54 @@
+Milestone 1 - Reflection and Next Steps
+
+Date: February 15, 2026
+
+Accomplishments:
+
+Successfully completed all Milestone 1 objectives:
+- Defined concrete problem: Predict energy poverty risk categories (Severe/Moderate/Minimal) for 2024-2027
+- Acquired 8 datasets from World Bank WDI covering 266 countries, 1990-2023
+- Built normalized SQLite database
+- Conducted comprehensive data exploration revealing urbanization (r=0.64) and government effectiveness (r=0.58) as strongest predictors
+- Created documentation (data dictionary, schema diagram, README)
+
+Challenges and Resolutions:
+
+1. Data Quality: Discovered "Unnamed: 69" artifact column in all datasets → Will remove during preprocessing
+
+2. Temporal Completeness: Pre-1990 data too sparse, post-2020 incomplete → Selected 1990-2020 as optimal training period
+
+3. Renewable Energy Interpretation: Strong negative correlation (r=-0.80) with electricity access was counterintuitive → Realized this reflects traditional biomass use in developing nations, not modern renewable electricity
+
+
+Key Learnings:
+
+- Exploration before modeling is essential - revealed critical issues that would have corrupted downstream analysis
+- Even authoritative data sources require validation - World Bank data had artifacts and temporal gaps
+- Correlation requires domain knowledge for correct interpretation
+- Urbanization and governance matter more for electricity access than GDP alone
+
+Next Steps:
+
+Modeling Approach:
+1. Baseline models: Logistic Regression, Decision Tree
+2. Advanced models: Random Forest, XGBoost
+3. Temporal validation: Train on 1990-2020, test on 2021-2023
+4. Feature engineering: Growth rates, regional indicators, interaction terms
+5. Model interpretation: SHAP values, error analysis, policy insights
+
+Preprocessing Steps:
+- Remove "Unnamed: 69" column
+- Filter to 1990-2020 training period, 2021-2023 validation
+- Handle missing values via forward-fill, backward-fill and interpolation for time series
+- Create risk_category variable (Severe <50%, Moderate 50-89%, Minimal ≥90%)
+- Generate lagged features and change rates
+
+Success Metrics:
+- ≥75% classification accuracy on validation set
+- Temporal validation within 5% of cross-validation accuracy (no severe overfitting)
+- Top features align with domain knowledge
+- Actionable insights for policy decisions
+
+Final Reflection:
+
+Milestone 1 created a solid foundation. The exploration revealed clear patterns (urbanization, governance) that should be learnable by classification algorithms. The database structure and data quality decisions will streamline modeling. Most importantly, this project has potential real-world impact - helping development organizations identify countries needing urgent intervention. Moving into Milestone 2 with clear objectives and well-understood data.
