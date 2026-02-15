@@ -59,3 +59,50 @@ The following variables are created during preprocessing:
 - `predicted_electricity_access` — Model-generated electricity access estimates
 
 These fields are not part of the original dataset and are computed within the project workflow.
+
+
+Repository Structure
+
+CAP5771_npydipati/
+├── README.md
+├── requirements.txt           # Project dependencies
+├── data_dictionary.pdf        # Variable definitions and data dictionary
+├── energy_poverty_prediction.ipynb  # Main notebook: data loading, preprocessing, modeling
+├── energy_poverty.db 
+├── database_schema.png  
+├── data/
+│   └── raw/ 
+│   └── processed/                  # Raw CSV files from World Bank WDI
+├── diary/                      # Project diary/log documenting workflow
+└── .gitignore
+
+Folders
+	•	data/raw/ — Raw datasets downloaded from World Bank WDI
+    •	data/processed/ — Processed datasets after preprocessing
+	•	diary/ — Log of project workflow, decisions, and observations
+Files
+	•	README.md — This overview and instructions
+	•	requirements.txt — Python packages and versions required
+	•	data_dictionary.pdf — Detailed description of variables
+	•	energy_poverty_prediction.ipynb — Jupyter notebook containing code and analysis
+    •	energy_poverty.db — SQLite database containing all data sources
+    •	database_schema.png — Visual diagram of the database schema showing tables, fields, and primary keys
+
+Instructions to Reproduce the Work
+	1	Clone the repository
+        git clone https://github.com/npydipati/CAP5771_npydipati.git
+        cd CAP5771_npydipati
+	2	Set up Python environment
+        python3 -m venv venv
+        source venv/bin/activate        # Mac/Linux
+        # venv\Scripts\activate         # Windows
+        pip install --upgrade pip
+        pip install -r requirements.txt
+	3	Open the Jupyter notebook
+        jupyter notebook energy_poverty_prediction.ipynb
+	4	Run notebook cells sequentially
+	•	Load raw CSVs from data/raw/
+	•	Inspect dataset structure and missing values (.info(), .describe(), .isnull().sum())
+	•	Preprocess data and create derived variables (risk_category, prediction_year, predicted_electricity_access)
+	5	Outputs
+	•	Tables, figures appear directly in the notebook

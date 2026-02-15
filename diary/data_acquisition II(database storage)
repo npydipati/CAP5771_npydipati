@@ -1,0 +1,44 @@
+Milestone 1 - Data Acquisition II (Database Storage)
+
+Date: February 10, 2026
+Today I designed and implemented a SQLite database to store all project data in a structured, queryable format.
+
+Database Schema Design:
+
+Table 1: countries
+- Purpose: Reference table for country metadata
+- Fields: country_code (TEXT, PK), country_name (TEXT, NOT NULL)
+- Rationale: Separates static country information to reduce redundancy
+
+Table 2: indicators
+- Purpose: Time-series data in long format (one row per country-year)
+- Fields: country_code (FK), year (INT), electricity_access, gdp_per_capita, urban_population_percent, rural_population_percent, population_density, total_population, renewable_energy_percent, government_effectiveness (all REAL)
+- Composite Primary Key: (country_code, year)
+- Rationale: Long format with country-year rows optimizes for time-series queries and temporal analysis
+
+Key Design Decisions:
+1. Two-table normalized structure:
+   - Separates static metadata from time-varying indicators
+   - Ensures data integrity through foreign key constraints
+
+2. Long format (country-year rows):
+   - Each row = one country in one year with all indicators
+   - Enables efficient temporal queries (ORDER BY year)
+   - Simplifies modeling (no pivoting required)
+   - Facilitates trend analysis and forecasting
+
+3. Data types: TEXT for categorical, INTEGER for year, REAL for numeric indicators
+
+Date: February 11, 2026
+
+Implementation:
+- Created schema in SQLite
+- Loaded processed CSV files with proper type casting
+- Verified data integrity (no foreign key violations, no duplicate keys)
+- Generated schema visualization (database_schema.png)
+
+Database File:
+- Filename: energy_poverty.db
+- Format: SQLite 3
+- Tables: 2 (countries, indicators)
+- Time Period: 1990-2023
