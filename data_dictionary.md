@@ -1,5 +1,6 @@
 # Data Dictionary — Energy Poverty Prediction Project
-**Primary Source:** World Bank — World Development Indicators (WDI) 
+**Primary Source:** World Bank — World Development Indicators (WDI)
+ 
 **Unit of Analysis:** Country–Year (1990–2023)
 
 ## Core Variables

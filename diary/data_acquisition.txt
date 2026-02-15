@@ -1,0 +1,24 @@
+Milestone 1 - Data Acquisition
+
+Date: 5 Feb 2026
+- Began the data acquisition phase for the Energy Poverty Prediction project.
+- Identified World Bank — World Development Indicators (WDI) as the primary data source for all relevant variables.
+  Link: https://data.worldbank.org/indicator
+- Selected variables based on their relevance to electricity access prediction, including economic indicators (GDP per capita), population metrics (urban/rural %, total population, density), energy indicators (renewable energy %), and governance (government effectiveness index).
+- Decided on country-year as the unit of analysis (1990–2023) to ensure temporal consistency across countries.
+- Considered data types and subtypes for each variable to guide later preprocessing:
+  * STRING → Qualitative, Nominal/Ordinal (e.g., country, risk_category)
+  * INT → Quantitative, Interval/Ratio (e.g., year, total_population)
+  * FLOAT → Quantitative, Ratio/Interval (e.g., electricity_access, gdp_per_capita)
+- Manually downloaded all raw CSV files from the World Bank WDI portal.
+
+Date: 9 Feb 2026
+- Completed organization of raw data under data/raw/ for reproducibility.
+- Ensured all datasets reflect the original values without preprocessing.
+- Prepared a data dictionary to document each variable, measurements, source, and description.
+- Created preliminary plans for derived variables to be generated during preprocessing:
+  * risk_category — Energy poverty classification
+  * prediction_year — Forecast year
+  * predicted_electricity_access — Model outputs (post-modeling)
+- Confirmed that no proprietary or restricted data sources were used; all data is publicly available.
+- The datasets are now ready for the preprocessing and modeling workflow, ensuring that analysis will be reproducible and transparent.
