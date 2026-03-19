@@ -1,4 +1,4 @@
-Milestone 1 - Data Wrangling
+Milestone 2 - Data Wrangling
 
 Date: 19 Feb 2026
 Data Loading and Initial Cleaning
@@ -38,6 +38,7 @@ this by keeping the NaNs and addressing them in the cleaning stage rather than t
 
 - Final dataset after cleaning: 7,412 rows, 218 countries, 1990-2023.
 
+Feature Engineering
 - What features did you create and why?
     - This week I created 4 engineered features to support the modeling objective:
 
