@@ -1,0 +1,101 @@
+Milestone 2 - Data Modeling
+
+Date: 12 Mar 2026
+
+--- Regression Models ---
+
+- What regression models did you build and which performed best?
+    - This week we built four regression models to predict electricity_access as a continuous percentage.
+    We used TimeSeriesSplit (5-fold) instead of StratifiedKFold for all regression CV because regression
+    on temporal data is more sensitive to fold ordering — random folds would allow training on future
+    years which inflates scores.
+
+    Results on validation set:
+
+    1. RF Baseline (n_estimators=100, default params)
+       CV R² (5-fold, TimeSeriesSplit): 0.7742 ± 0.0369
+       Val R²: 0.9115, MAE: 3.8058, RMSE: 7.2455
+
+    2. RF Improved (n_estimators=800, max_depth=16, min_samples_split=6,
+       min_samples_leaf=2, max_features=0.6, bootstrap=True)
+       CV R² (5-fold, TimeSeriesSplit): 0.7888 ± 0.0347
+       Val R²: 0.9178, MAE: 3.9433, RMSE: 6.9864  ← BEST
+
+    3. XGBoost Baseline (n_estimators=300, max_depth=6, learning_rate=0.05)
+       CV R² (5-fold, TimeSeriesSplit): 0.7888 ± 0.0371
+       Val R²: 0.9064, MAE: 4.0929, RMSE: 7.4529
+
+    4. XGBoost Improved (n_estimators=700, max_depth=5, learning_rate=0.05,
+       subsample=0.85, colsample_bytree=0.85, gamma=0.05)
+       CV R² (5-fold, TimeSeriesSplit): 0.7839 ± 0.0407
+       Val R²: 0.9101, MAE: 4.0365, RMSE: 7.3058
+
+- Why is the CV R² (~0.78) lower than validation R² (~0.92)?
+    - This gap is expected and honest with TimeSeriesSplit. Earlier folds have significantly less
+    training data than later folds — fold 1 trains on roughly 20% of the data while fold 5 trains
+    on 80%. Models trained on less data naturally score lower. The validation R² uses the full
+    1990-2017 training set and is the primary metric for model selection.
+
+- Best regressor: RF Improved (0.9185 validation R²)
+    - RF Improved beat the baseline on both R² (0.9185 vs 0.9122) and RMSE (6.95 vs 7.22),
+    confirming the hyperparameter tuning was effective for regression even though it did not
+    help for classification.
+
+--- Feature Importance ---
+
+- What did feature importance reveal?
+    - We extracted feature importance scores from both best models (RF Baseline classifier and
+    RF Improved regressor) and compared them side by side.
+
+    Top features for RF Regressor (Improved):
+    1. renewable_energy_percent — by far the most important (~0.40 importance score)
+    2. gdp_per_capita — second most important (~0.25)
+    3. rural_population_percent and urban_population_percent — mid-tier
+    4. government_effectiveness, population_density — lower tier
+    5. elec_access_change, gdp_growth, urban_change — least important
+
+    Top features for RF Classifier (Baseline):
+    1. renewable_energy_percent — most important (~0.20)
+    2. gdp_per_capita — second (~0.18)
+    3. rural_population_percent, urban_population_percent — similar importance
+    4. elec_access_change — more important for classification than regression
+
+- What do these results mean for the project?
+    - The dominance of renewable_energy_percent and gdp_per_capita across both models confirms
+    that structural economic and energy mix factors drive electricity access more than short-term
+    demographic changes. This has a direct policy implication — countries seeking to improve
+    electricity access should prioritise renewable energy investment and economic development
+    rather than focusing solely on population distribution.
+    - The year-over-year change features (gdp_growth, urban_change) score lowest, suggesting
+    short-term fluctuations matter less than long-run structural conditions.
+
+--- Final Test Set Results (2021–2023) ---
+
+    - What were the final test set results?
+    - Test set covers 2021-2023 — completely held out and never seen during training or tuning.
+
+    Best Classifier (RF Baseline):
+    - Test Accuracy: 0.8746
+    - Minimal F1: 0.95, Moderate F1: 0.59, Severe F1: 0.75
+    - The Moderate class is hardest to predict (F1: 0.59) — countries in transition between
+    Severe and Minimal are inherently ambiguous and the model struggles most there.
+
+    Best Regressor (RF Improved):
+    - Test R²: 0.8636, MAE: 4.9039, RMSE: 8.4843
+    - The drop from validation R² (0.9185) to test R² (0.8636) reflects post-COVID patterns
+    in 2021-2023 that differ from the training distribution.
+
+- Outputs saved for dashboard:
+    - test_predictions.csv — actual vs predicted risk category and electricity access for all
+    654 test rows
+    - feature_importance.csv — importance scores for both best models across all 10 features
+
+--- Reflection ---
+
+What went well:
+  - Strong validation results (0.9235 accuracy, 0.9185 R²) confirm real signal in features.
+  - TimeSeriesSplit caught 15pp CV inflation that StratifiedKFold missed.
+
+Setbacks:
+  - Improved RF classifier underperformed baseline — mild overfitting to training distribution.
+  - Test R² dropped more than expected due to post-COVID anomalies in 2021–2023.

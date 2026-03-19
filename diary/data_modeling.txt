@@ -1,4 +1,4 @@
-Milestone 2 - Data Wrangling
+Milestone 2 - Data Modeling
 
 Date: 4 Mar 2026
 Train/Val/Test Split
@@ -18,7 +18,7 @@ Train/Val/Test Split
         - Minimal rises from 60.0% (train) to 72.5% (val) to 73.2% (test)
 
     - Feature set: 10 socioeconomic features — gdp_per_capita, urban_population_percent, rural_population_percent, population_density, total_population,
-renewable_energy_percent, government_effectiveness, elec_access_change, gdp_growth, urban_change.
+    renewable_energy_percent, government_effectiveness, elec_access_change, gdp_growth, urban_change.
 
 Note: lagged_electricity and lagged_gdp were intentionally excluded. Initial testing showed the regressor assigned nearly 100% feature importance to lagged_electricity,
 essentially doing autoregression (predict this year = last year) rather than learning economic drivers. Since our goal is forecasting 2024-2027 from economic indicators
