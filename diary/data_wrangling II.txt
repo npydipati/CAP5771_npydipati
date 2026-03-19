@@ -1,0 +1,28 @@
+Milestone 2 - Data Wrangling Pipeline
+
+Date: 27 Feb 2026
+Reproducible Pipeline and Validation
+
+- What decisions did you make when building the wrangling pipeline?
+    - This week we focused on making the entire wrangling pipeline reproducible end-to-end. Every step from raw CSV loading to the final
+    analysis_ready.csv can be rerun from scratch by executing the notebook top to bottom with no manual intervention. We achieved this by
+    saving intermediate processed CSVs for each indicator (electricity_access_long.csv, gdp_long.csv, etc.) so that downstream notebooks
+    do not need to repeat the reshaping steps.
+    - We added explicit data quality checks at the end of the pipeline including impossible value detection (percentages outside 0-100),
+    urban + rural sum validation, risk_category consistency checks, and a data leakage check. These checks act as assertions — 
+    if anything is wrong the output will show it before it reaches modeling.
+
+- What validation steps did you add and why?
+    - I added a schema validation table that prints every column name, dtype, null count, and a sample value after saving analysis_ready.csv.
+    This gives any reader of the notebook immediate confirmation that the output is clean without having to inspect the CSV manually.
+    - I also added a final data quality report printing total rows, columns, countries, year range, and zero-null confirmation.
+
+- What challenges did you face?
+    - The most difficult challenge was handling the remaining NaNs after interpolation. A small number of country-year combinations had
+    NaNs in engineered features (elec_access_change, gdp_growth, urban_change) because they are the first year for a country and
+    differencing produces NaN by definition. We handled these with a second-pass interpolation followed by median fill as a fallback.
+    - We also discovered that 2024 rows were appearing in the dataset after interpolation even though I filtered to 1990+ earlier. The
+    World Bank CSVs include a 2024 column with preliminary estimates which survived the melt step. I added an explicit year <= 2023
+    filter after the quality check to remove these.
+
+- Next steps: Move to modeling notebook and build classification and regression models on the analysis-ready dataset.
