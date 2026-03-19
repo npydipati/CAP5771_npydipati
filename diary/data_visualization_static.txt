@@ -1,0 +1,49 @@
+Milestone 2 - Data Visualization
+
+Date: 19 Mar 2026
+How did you design your dashboard and what did you learn from visualizing the results?
+    This week we built the static dashboard notebook using matplotlib and ipywidgets. The dashboard has 7 static views and 3 interactive widgets.
+    Static Views:
+        1. Global Electricity Access Trend (1990–2023) — line chart showing global average rising from ~72% to ~90%, plus a histogram of the most recent year's distribution
+        revealing the bimodal pattern (many near 100%, many stuck below 50%).
+
+        2. Risk Category Distribution — bar chart of overall counts plus a line chart showing how Severe/Moderate/Minimal countries changed over time. The sharp decline in
+        Severe countries after 2010 reflects major electrification pushes in South Asia and Sub-Saharan Africa.
+
+        3. Electricity Access Progress (1990–2023) — top 10 most improved countries by percentage point gain, and the 15 countries with the lowest access in the most
+        recent year. Dark red bars highlight countries below 30% — the most critical cases.
+
+        4. Feature Importance — side by side bar charts for the best regressor (RF Improved) and best classifier (RF Baseline). Both models agree that renewable_energy_percent
+        and gdp_per_capita dominate predictions.
+
+        5. Correlation with Electricity Access — Pearson correlation bar chart showing rural_population_percent as the strongest negative driver and
+        renewable_energy_percent and gdp_per_capita as the strongest positive drivers.
+
+        6. Model Performance Comparison — bar charts comparing all 4 models on validation accuracy (classification) and R² (regression). RF Baseline won classification at
+        0.9297 and RF Improved won regression at R²=0.9178.
+
+        7. Test Set Evaluation — actual vs predicted scatter for regression and confusion matrix for classification on the 2021–2023 test set. Classifier achieved 87.77%
+        test accuracy. Moderate class was hardest to predict — it is the transition zone.
+
+        8. GDP vs Electricity Access — scatter plot across four reference years (1995, 2005, 2015, 2023) showing the positive relationship between economic development and
+        electricity access. Countries have moved upward and rightward over time.
+
+        9. 2024–2027 Forecast — grouped bar chart of predicted risk categories per year and a combined historical + forecast line chart. Global average projected to rise from
+        85.8% (2024) to 86.3% (2027). 27 countries remain Severe by 2027, almost entirely in Sub-Saharan Africa.
+
+    Interactive Widgets:
+        - Widget A (country dropdown): shows any country's full trajectory — historical actual, test predictions (2021–2023), and forecast (2024–2027) side by side with GDP.
+        - Widget B (year slider): year-by-year global snapshot of GDP vs electricity access coloured by renewable energy % — the two strongest predictors from feature
+        importance together in one chart.
+        - Widget C (risk transition range slider): transition matrix showing how countries moved between Severe/Moderate/Minimal between any two selected years, plus a
+        list of which Severe countries improved and which remain stuck.
+
+Key design decisions:
+1. Added ipywidgets fallback static plots for environments where widgets don't render (e.g. VS Code).
+2. Widget B uses renewable_energy_percent as the colour dimension to stay consistent with feature importance findings — GDP on X axis, renewable
+   energy as colour, both top predictors visible in one chart.
+3. Widget C uses a risk transition explorer — directly tied to the project goal of identifying which countries face persistent energy poverty risk.
+
+Key finding communicated by the dashboard:
+Global electricity access has improved substantially since 1990 but progress is slowing. The 27 countries projected to remain in Severe risk by 2027 share the same
+structural barriers — low GDP, high rural population, weak institutions — and will require targeted policy intervention beyond what trend extrapolation predicts.
