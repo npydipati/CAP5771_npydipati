@@ -1,0 +1,55 @@
+Milestone 1 - Data Wrangling
+
+Date: 19 Feb 2026
+Data Loading and Initial Cleaning
+- What decisions did you make when loading and cleaning your data?
+    - This week I loaded all 8 World Bank datasets into the notebook. Each CSV had 4 metadata rows at the top which needed to be skipped using skiprows=4. After loading, I found that
+    each dataset had an "Unnamed" trailing column that pandas creates when the CSV has a trailing comma 
+    — I dropped these immediately using str.contains("Unnamed").
+    - The biggest decision this week was removing non-country entries. The World Bank datasets include aggregate rows like "World", "High income", "Sub-Saharan Africa", and about 40
+    other regional and income-group aggregates. If left in, these would distort model training because they represent weighted averages of many countries, not actual
+    observations. 
+    - I also standardised the column names from "Country Name" and "Country Code" to "country" and "country_code" for consistency across all 8 datasets before any merging.
+
+-  How did you transform and merge your datasets?
+    - I reshaped all 8 datasets from wide format (one column per year) to long format (one row per country-year) using pd.melt(). Wide format is how the World Bank
+    distributes the data but it is not suitable for modeling — you cannot run time-series operations like differencing or lagging on wide format data.
+    - After reshaping, I filtered all datasets to 1990 onwards. Pre-1990 data has excessive missingness across most indicators, particularly electricity access which only begins
+    in 1990 in the World Bank records. Keeping pre-1990 rows would add thousands of essentially empty rows with no analytical value.
+    - For merging, I used electricity access as the base table and left-joined all other indicators on country and year. I chose left joins deliberately — electricity access
+    is our target variable, so we keep all country-year combinations where it exists and accept NaNs for other indicators that may have slightly different country coverage.
+
+One challenge: government effectiveness uses a different ISO code system than the other World Bank indicators, causing some countries to not match on merge. I handled
+this by keeping the NaNs and addressing them in the cleaning stage rather than trying to force a join on mismatched keys.
+
+- How did you handle missing values and why?
+    - I addressed missing values across all 8 indicators. My strategy was per-country linear interpolation rather than global mean imputation or row dropping,
+    for three reasons:
+
+    1. Dropping rows would eliminate entire country-year combinations and create gaps in the time series, making lag and difference features unreliable.
+    2. Global mean imputation ignores the fact that countries have very different development trajectories. Filling Uganda's missing GDP with the global mean GDP
+    would introduce serious noise.
+    3. Per-country linear interpolation estimates missing years from the surrounding known years of the same country, which is the most defensible approach for
+    panel time-series data.
+    - For government effectiveness specifically, which had ~70% missingness after interpolation, I filled remaining NaNs with the global median as a last resort.
+    This column has poor coverage in the World Bank database for many developing countries and earlier years — it simply does not exist rather than being a data error.
+    - I also dropped 2024 data entirely. World Bank 2024 figures are preliminary estimates released with a 1-2 year lag, not verified measurements, and 2024 is our forecast
+    target year — including it in training would leak future information into the model.
+
+- Final dataset after cleaning: 7,412 rows, 218 countries, 1990-2023.
+
+- What features did you create and why?
+    - This week I created 4 engineered features to support the modeling objective:
+
+    1. risk_category — a categorical label derived from electricity_access: Severe (<50%), Moderate (50-89%), Minimal (90-100%). This is the classification
+    target and directly represents energy poverty risk levels as defined in the project problem statement.
+    2. elec_access_change — year-over-year difference in electricity access per country. This captures the rate of change rather than the absolute level, which is important
+    for identifying countries that are rapidly improving vs stagnating.
+    3. gdp_growth — year-over-year percentage change in GDP per capita. Economic growth rate is more informative than raw GDP level for predicting near-term changes in
+    electricity access, since a rapidly growing economy is more likely to invest in infrastructure.
+    4. urban_change — year-over-year change in urban population percentage. Urbanisation is strongly associated with electricity access improvements because urban grids are
+    cheaper to extend than rural ones.
+
+- One key decision: I did NOT include lagged_electricity or lagged_gdp as features. Initially I created them, but testing showed the regressor then learned almost entirely
+from lagged_electricity (R²=0.9991 but 100% feature importance on one variable), essentially doing autoregression rather than learning economic drivers. Since our goal
+is to forecast 2024-2027 from economic indicators, this was not acceptable.
