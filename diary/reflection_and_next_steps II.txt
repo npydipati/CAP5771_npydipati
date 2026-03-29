@@ -1,0 +1,30 @@
+Milestone 2 - Reflection and Next Steps
+
+Date: 24 Mar 2026
+
+- What did you accomplish this milestone?
+    - Completed the full data science pipeline from raw data to deployed dashboard.
+    - Built a reproducible wrangling pipeline producing a clean 7,412-row dataset
+      across 218 countries from 1990-2023 with zero nulls.
+    - Trained and evaluated 4 classifiers and 4 regressors with honest temporal
+      evaluation — best classifier achieved 0.9235 validation accuracy, best
+      regressor achieved 0.9185 R².
+    - Built a 9-view static dashboard with 3 interactive widgets covering country
+      exploration, year snapshots, and risk category transitions.
+    - Generated 2024-2027 baseline forecasts for all 218 countries.
+
+- What are the key takeaways from this milestone?
+    - Renewable energy percentage and GDP per capita are the two strongest predictors
+      of electricity access — structural factors matter more than short-term changes.
+    - Simpler models (RF Baseline) can outperform tuned models when the data
+      distribution shifts over time — complexity is not always better.
+    - TimeSeriesSplit is essential for honest CV on temporal data — StratifiedKFold
+      inflated scores by ~15 percentage points.
+
+- What would you do differently or explore next?
+    - Explore LSTM or transformer-based models for the regression task to better
+      capture long-term temporal dependencies.
+    - Build an optimistic/pessimistic scenario forecast in addition to the baseline
+      to give policymakers a range of possible outcomes.
+    - Deploy the dashboard as a standalone web app using Streamlit or Dash for
+      broader accessibility beyond Jupyter notebooks.

@@ -75,7 +75,7 @@ CAP5771_npydipati/
 ├── data_wrangling.ipynb               # Data cleaning & feature engineering
 ├── data_modeling.ipynb                # Model training & evaluation
 ├── data_visualization_static.ipynb    # Static dashboard with widgets
-│── .gitignore
+├── .gitignore
 ├── data/
 │   ├── raw/                           # Raw World Bank CSVs (8 indicators)
 │   │   ├── 1.AccessToElectricityAPI_.../
@@ -160,19 +160,19 @@ Instructions to Reproduce the Work
 - cd CAP5771_npydipati
 2. Set up Python environment
 ```bash
-    python3 -m venv venv
+python3 -m venv venv
 
-    # Activate virtual environment
-    source venv/bin/activate        # Mac/Linux
-    # OR
-    venv\Scripts\activate           # Windows
+# Activate virtual environment
+source venv/bin/activate        # Mac/Linux
+# OR
+venv\Scripts\activate           # Windows
 
-    pip install --upgrade pip
-    pip install -r requirements.txt
+pip install --upgrade pip
+pip install -r requirements.txt
 ```
 3. Open the Jupyter notebook
 ```bash
-    jupyter notebook energy_poverty_prediction.ipynb
+jupyter notebook energy_poverty_prediction.ipynb
 ```
 4. Run the wrangling notebook
 ```bash
