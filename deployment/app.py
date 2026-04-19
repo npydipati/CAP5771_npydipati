@@ -758,7 +758,7 @@ def page_about():
     st.markdown("""
 ## Energy Poverty Prediction
 
-**Author:** Rishitha Pydipati, Nikhitha Pydipati | **University:** University of Florida | **Course:** CAP5771 — Data Science
+**Author:** Rishitha Pydipati, Nikhitha Pydipati | **University:** University of Florida | **Course:** CAP5771 — Introduction to Data Science
 
 ---
 
