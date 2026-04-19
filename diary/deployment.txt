@@ -1,0 +1,103 @@
+Date: April 17, 2026
+Milestone 3 — Deployment
+
+WHAT I DID THIS WEEK : 
+This week I built and deployed the final Streamlit dashboard for the Energy Poverty Prediction project. The goal was to take all the work from Milestones 1 and 2 —
+the wrangling pipeline, the trained models, and the 9 static views + 3 interactive widgets from data_visualization_static.ipynb — and make them accessible as a
+live, publicly deployable web application.
+
+DECISION 1 — Choosing Streamlit Over Other Frameworks
+
+I evaluated three deployment options:
+
+Option A: Plotly Dash
+  Pros: More flexible layouts, production-grade callback system
+  Cons: Requires explicit callback wiring for every interaction, significantly more boilerplate code, steeper learning curve
+
+Option B: Flask + HTML templates
+  Pros: Full control over frontend
+  Cons: Would require rewriting all matplotlib charts into a web-compatible format, essentially rebuilding the entire visualization layer from scratch
+
+Option C: Streamlit
+  Pros: Works natively with pandas and matplotlib — the exact same code from the notebooks runs inside the app with minimal changes. Streamlit Community
+        Cloud offers free hosting directly from a public GitHub repo with zero infrastructure configuration.
+  Cons: Less flexible for complex layouts; the single-column flow can feel constrained for dashboards with many side-by-side panels
+
+Decision: Streamlit. The key reasoning was that this project's audience — aid organizations and policy researchers — benefits most from an accessible, browsable
+tool rather than a technically sophisticated but harder-to-maintain dashboard. Streamlit's simplicity is a feature, not a limitation, in this context.
+
+Tradeoff accepted: Dash would have allowed more precise layout control (e.g., true multi-panel grids), but the development overhead was not justified given that
+Streamlit's column layout handled all 9 views adequately.
+
+DECISION 2 — Reusing Exact Notebook Visualization Code
+
+I had two options for the charts in the app:
+
+Option A: Rewrite charts using Plotly or Altair for interactive web rendering
+  Pros: Native browser interactivity (hover tooltips, zoom), more polished visuals
+  Cons: All 9 views and 3 widgets would need to be completely rewritten in a different plotting API. The existing matplotlib code from the notebook is
+        well-tested and produces the exact figures already graded in Milestone 2. Rewriting introduces risk of introducing bugs and inconsistencies.
+
+Option B: Port the exact matplotlib code from data_visualization_static.ipynb
+  Pros: Zero risk of visual inconsistency. The graders have already seen these charts in the notebook — the app is a direct deployment of that work,
+        not a reimplementation. Also keeps the codebase DRY (Don't Repeat Yourself) — the notebook and the app produce identical figures.
+  Cons: matplotlib figures in Streamlit are static images (no hover interactivity), but the interactive element is provided by Streamlit widgets (selectbox, slider) which replace the ipywidgets from the notebook.
+
+Decision: Option B. Every chart in the app is copied verbatim from the notebook. The ipywidgets (Dropdown, IntSlider, IntRangeSlider) were replaced with their
+Streamlit equivalents (st.selectbox, st.slider) which trigger a full page re-render rather than a widget callback — functionally identical from the user's
+perspective.
+
+Tradeoff accepted: Static matplotlib images mean no hover tooltips. This is acceptable because the charts already include value annotations (e.g., percentage
+labels on bars) which serve the same purpose.
+
+DECISION 3 — App Page Structure
+
+I needed to decide how to organize 9 views and 3 widgets into a navigable app.
+
+Option A: All views on a single long-scrolling page
+  Pros: Simple to implement
+  Cons: The page would be extremely long, models would retrain on every chart render, and the user would lose context scrolling between charts
+
+Option B: Tabs (st.tabs)
+  Pros: Keeps everything visible in one screen
+  Cons: Tab labels get crowded with 12 sections; Streamlit tabs don't support nested tabs cleanly for this many sections
+
+Option C: Sidebar radio navigation (9 discrete pages)
+  Pros: Clear navigation, each page loads only what it needs, caching prevents redundant computation, matches how users naturally explore a dashboard
+  Cons: User must click to switch views rather than scroll
+
+Decision: Option C — sidebar radio with 9 pages covering Overview, Views 1–3, Views 4–6, Views 7–8, View 9 (Forecast), Widget A, Widget B, Widget C, and About.
+The grouping of views into logical sections (Trends, Features/Models, Evaluation, Forecast, Widgets) mirrors the narrative arc of the notebook.
+
+DECISION 4 — Caching Strategy
+
+Streamlit reruns the entire Python script on every user interaction (slider move,
+selectbox change). Without caching this would mean:
+  - Reloading analysis_ready.csv (7,400 rows) on every slider move in Widget B
+  - Retraining the RF regressor (800 trees) on every page navigation
+
+I used two caching decorators:
+  @st.cache_data   — for data loading (analysis_ready.csv, test_predictions.csv, feature_importance.csv, forecast_2024_2027.csv). Data is
+                     pinned in memory and reused across all sessions.
+  @st.cache_resource — for model training (the RF classifier and regressor). The fitted model objects are held in memory permanently so
+                     training (~30 seconds) only happens once per deployment.
+
+This was the single most important performance decision. Without it, Widget B's year slider would trigger a model retrain on every drag, making the app unusable.
+
+DECISION 5 — Fallback When Output CSVs Are Missing
+
+The app depends on three CSVs produced by data_modeling.ipynb:
+  - data/processed/test_predictions.csv
+  - data/processed/feature_importance.csv
+  - data/processed/forecast_2024_2027.csv
+
+A reviewer cloning the repo without running the modeling notebook would find these missing and see blank pages. I added a fallback: if any of the three files are
+absent, the app trains the RF Baseline classifier and RF Improved regressor from scratch using analysis_ready.csv and generates the three outputs on the fly.
+
+Tradeoff: The fallback adds ~30 seconds of cold-start time, but it means the app is self-contained and functional even from a fresh clone with only the raw CSV.
+
+WHAT I LEARNED : 
+
+Deploying a notebook as an interactive app is a stronger test environment than static output cells. The three setbacks above were all latent bugs in the notebook
+code that only became visible when a user could select arbitrary countries or drag a slider to edge-case years. Interactive deployment acts as a form of
+extended integration testing that a static notebook cannot replicate.
