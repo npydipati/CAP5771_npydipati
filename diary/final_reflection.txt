@@ -1,0 +1,326 @@
+DIARY ENTRY — Final Reflection
+Milestone 3
+Date: April 20, 2026
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PURPOSE OF THIS ENTRY
+━━━━━━━━━━━━━━━━━━━━━
+This entry reflects on the complete project — from problem formulation
+through modeling to the final deployed tool. It documents the major findings, 
+all significant tradeoffs, every meaningful setback and how it was 
+resolved, revisions made along the way, and the reasoning behind the most
+consequential decisions.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+MAJOR FINDINGS
+━━━━━━━━━━━━━━
+
+Finding 1 — Global Progress is Real but Slowing
+Global electricity access grew from approximately 72% (1990) to 90% (2023) — an
+18 percentage point gain over 33 years. However, the annual rate of gain peaked
+around 2010–2015 and has visibly decelerated since. The last-mile problem is the
+cause: connecting dense urban areas is cheap because infrastructure already exists
+nearby; reaching dispersed rural populations in Sub-Saharan Africa requires
+building entirely new grid infrastructure at very high cost per household.
+
+Finding 2 — The Renewable Energy Paradox
+The most surprising finding: renewable_energy_percent is the strongest predictor
+in both models but the relationship is NEGATIVE. Countries with a high renewable
+energy share tend to have lower electricity access. This seems contradictory until
+you understand the World Bank's definition — their renewable metric includes
+traditional biomass (wood, charcoal, animal dung), which is exactly the fuel used
+by households with no grid connection. A country with 85% renewable energy may
+simply be one where 85% of people burn wood because they have no electricity.
+Policy implication: using renewable energy % as a headline metric for energy
+progress is deeply misleading. An aid organization relying on it alone would
+misclassify the most energy-poor countries as clean energy leaders.
+
+Finding 3 — Governance Matters as Much as Wealth
+government_effectiveness is the 5th most important feature for the regressor.
+Countries with similar GDP can have dramatically different electricity access
+outcomes depending on institutional quality. A wealthy but poorly governed country
+fails to translate economic resources into infrastructure investment. This supports
+the argument that governance reform is as important as direct infrastructure
+spending for electrification progress.
+
+Finding 4 — 27 Countries Stuck in Severe Risk by 2027
+The model projects approximately 27 countries will remain below 50% electricity
+access through 2027. Their shared profile: GDP per capita below $2,000, rural
+population above 60%, renewable_energy_percent above 80% (traditional biomass),
+government effectiveness score below -0.5. Almost all are in Sub-Saharan Africa.
+Trend extrapolation is insufficient for these countries — they need targeted
+structural intervention, not just continued monitoring.
+
+Finding 5 — The Moderate Class is the Hardest to Predict (F1 = 0.59)
+Countries in the 50–89% band are in active transition, and their trajectory is
+highly sensitive to one-off events: a large infrastructure investment, a political
+transition, or economic shock. The model's low confidence here is actually a useful
+signal — Moderate-risk countries are high-leverage intervention targets where a
+well-timed push can tip them into Minimal risk, and where human judgment is most
+needed alongside the model output.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TRADEOFFS
+━━━━━━━━━
+
+Tradeoff 1 — Temporal Split vs. Random Split
+A random 80/20 train/test split would have been simpler to implement and would
+have produced higher apparent accuracy scores — the model could train on 2022
+data and predict 2019, which is data leakage. A temporal split (1990–2017 train,
+2018–2020 val, 2021–2023 test) is strictly correct for a forecasting problem but
+produces lower, more honest scores. We chose the temporal split and accepted the
+lower numbers. Every metric in this project reflects genuine out-of-sample
+forecasting ability, not inflated in-sample fitting.
+
+Tradeoff 2 — TimeSeriesSplit CV vs. StratifiedKFold CV
+StratifiedKFold cross-validation returned ~0.97 accuracy for the classifier.
+TimeSeriesSplit returned ~0.78 R² for the regressor. The gap — approximately 15
+percentage points — represents the inflation from allowing future data to appear
+in training folds. TimeSeriesSplit is slower and produces less impressive numbers,
+but it is the only honest approach for temporal panel data. We chose honesty over
+the more impressive headline number.
+
+Tradeoff 3 — Keeping renewable_energy_percent vs. Removing It
+After discovering the negative correlation, We considered removing this feature
+entirely because it seemed paradoxical and We worried the model might learn a
+spurious relationship. The tradeoff: keeping it gives the model its single most
+predictive signal at the cost of requiring careful interpretation; removing it
+produces a cleaner-seeming but less accurate model. We kept it because the
+relationship is real and structurally grounded in how the World Bank defines
+biomass, not noise. A high-predictive-power feature should not be dropped just
+because the causal direction is counterintuitive.
+
+Tradeoff 4 — Per-Country Interpolation vs. Global Mean Imputation
+Global mean imputation is simple and fast. Per-country linear interpolation is
+slower and more complex to implement. The tradeoff: global mean imputation would
+fill Uganda's missing GDP with the world average GDP, introducing severe noise
+for a developing country. Per-country interpolation estimates missing years from
+the surrounding known years of the same country, which is far more defensible for
+panel time-series data. We chose per-country interpolation and accepted the
+additional implementation complexity.
+
+Tradeoff 5 — Running Both Regression and Classification vs. One Model Type
+Running both a regressor and a classifier doubled the modeling workload. The
+tradeoff: a single classifier is simpler to explain and maintain; both together
+produce more actionable output. A continuous percentage is useful for analysts;
+a risk category is useful for policy audiences who need a clear priority signal.
+We built both and accepted the added complexity because the combined output is more
+useful than either alone.
+
+Tradeoff 6 — RF Baseline vs. Tuned Models for Classification
+The tuned RF classifier and both XGBoost models had higher cross-validation scores
+than RF Baseline, but all performed worse on the validation set. The tradeoff:
+choosing the tuned model would have optimized for CV score at the expense of
+generalization; choosing the baseline gives up CV performance but generalizes
+better when the class distribution shifts in 2018–2020. We selected the model that
+performed best on the held-out validation set (RF Baseline), not the one with the
+best cross-validation score. Principle: always choose based on held-out performance,
+not training-time metrics.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SETBACKS AND HOW THEY WERE RESOLVED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Setback 1 — Unnamed:69 Artifact Column in All Raw CSVs
+During data exploration We discovered an "Unnamed:69" column in all 8 World Bank
+datasets. This was created by pandas because the raw CSVs have a trailing comma
+at the end of every row, causing pandas to read a 69th empty column that does not
+exist in the data. Had this not been caught, it would have silently added a column
+of NaN values to every merged dataset, corrupting null counts and model inputs.
+Resolution: Added .loc[:, ~df.columns.str.contains("Unnamed")] as the first
+cleaning step after every CSV load. Now the first operation after pd.read_csv().
+
+Setback 2 — 2024 Preliminary Data Leaking Through the Melt Step
+After reshaping all datasets from wide to long format using pd.melt(), a year <=
+2023 filter was applied. Despite this, 2024 rows appeared in the final merged
+dataset. The World Bank CSVs include a "2024" column of preliminary estimates that
+survived the melt step because the filter ran before the merge, not after it.
+Including 2024 in training would have leaked future information into the model.
+Resolution: Added an explicit year <= 2023 filter after the final data quality
+check, after all merges had completed. Lesson: filters applied before a merge do
+not protect against columns introduced by the merge from a different source table.
+
+Setback 3 — Lagged Features Caused the Regressor to Learn Autoregression
+We initially included lagged_electricity (prior year's access) as a feature. The
+regressor assigned ~100% feature importance to it and achieved R² = 0.9991 —
+effectively learning "this year ≈ last year." This would be useless for 2024–2027
+forecasting because we do not have future values of electricity access to feed
+as lag inputs.
+Resolution: Removed lagged_electricity and lagged_gdp entirely. Reran all 8
+models. Performance dropped to R² = 0.91 on validation — an honest score based on
+structural predictors rather than a trivially constructed lag.
+
+Setback 4 — Government Effectiveness ISO Code Mismatch
+The government effectiveness indicator uses a slightly different ISO country code
+system than the other 7 indicators, causing ~30 countries to fail to match on the
+merge key and producing NaN government_effectiveness values for those countries
+even after interpolation.
+Resolution: Rather than force an error-prone code translation, We accepted the NaNs
+from the merge and applied global median fill as a last resort after per-country
+interpolation. This is documented explicitly so reviewers understand it is a data
+coverage limitation, not a pipeline bug.
+
+Setback 5 — Tuned Models Underperformed the Baseline on Validation
+After significant time tuning RF (n_estimators=700, max_depth=14,
+class_weight='balanced') and XGBoost, all four tuned variants scored lower on the
+validation set than the simple 100-tree RF Baseline. CV scores had suggested the
+tuned models were better. This was a genuine surprise.
+Resolution: Analysis revealed the class distribution shifts between training
+(Severe = 22.7%) and validation (Severe = 13.0%). Tuned models — especially those
+with class_weight='balanced' — had overfit to the training class balance. The
+baseline, with no such assumption, generalized better to the shifted distribution.
+Final selection: RF Baseline for classification. This was the correct result, not
+a failure of the tuning process.
+
+Setback 6 — Test R² Dropped More Than Expected (0.918 → 0.864)
+The validation R² was 0.918. Test R² on 2021–2023 data was 0.864 — a 5.4 point
+drop larger than the typical generalization gap. This required explanation before
+reporting.
+Resolution: Investigation showed 2021–2023 contains post-COVID patterns — supply
+chain disruptions, economic contraction, and reporting delays — that differ from
+the 1990–2020 training distribution. The drop is real but explained by external
+circumstances, not model failure. Documented transparently in all outputs.
+Lesson: always report both validation and test metrics; validation alone would
+have overstated real-world performance.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+REVISIONS MADE ACROSS THE PROJECT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Revision 1 — Risk Category Thresholds (Quartile-Based → Fixed)
+Originally We considered quartile-based thresholds that shift each year as global
+access improves. We revised this to fixed thresholds (Severe <50%, Moderate 50–89%,
+Minimal ≥90%) aligned with UN SDG7 benchmarks. Reason: fixed thresholds allow
+meaningful year-to-year comparison. With quartile-based thresholds, a country
+could move from Severe to Moderate between 2010 and 2015 purely because global
+averages improved, even if nothing changed in that country.
+
+Revision 2 — Data Scope (1960+ → 1990–2023)
+The initial plan included all available World Bank data from 1960. After
+exploration revealed pre-1990 data had >60% missingness for most indicators, I
+revised the scope to 1990–2023. Pre-1990 rows would have added thousands of
+nearly-empty observations that would have distorted imputation and made
+year-over-year change features unreliable.
+
+Revision 3 — Cross-Validation Method (StratifiedKFold → TimeSeriesSplit)
+Initial modeling used StratifiedKFold. After noticing that CV accuracy (~0.97)
+was much higher than validation accuracy (~0.92), We investigated and found temporal
+data leakage within folds. We revised all CV to TimeSeriesSplit(n_splits=5),
+reran all 8 models, and updated all reported scores. This reduced headline CV
+numbers by ~15 percentage points but produced honest estimates.
+
+Revision 4 — Feature Set (With Lags → Without Lags)
+The initial feature set included lagged_electricity and lagged_gdp. After
+discovering the autoregression problem, We revised the feature set to exclude both
+lag variables and reran all 8 models from scratch. The final 10-feature set
+reflects only structural indicators that would be genuinely available at forecast
+time without needing future values of the target variable.
+
+Revision 5 — Widget B Design (Single Year Static → Year Slider with Colour Encoding)
+The original plan for Widget B was a static scatter plot of the most recent year.
+After building Widget A and seeing the value of temporal exploration, We revised
+Widget B to use a year slider (1990–2023) so users can watch the GDP vs
+electricity access relationship evolve over time. The renewable energy colour
+dimension was added specifically to communicate the paradox finding visually —
+users can immediately see that countries with high renewable % (traditional
+biomass, shown red) cluster in the low-access region of the chart.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+REASONING BEHIND THE MOST CONSEQUENTIAL DECISIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Decision — Why World Bank WDI as the Sole Data Source
+We could have enriched the dataset with conflict data (ACLED), climate data
+(ERA5), or infrastructure investment records (AidData). We chose WDI only for two
+reasons: (1) reproducibility — anyone can download the exact same CSVs from the
+World Bank portal and reproduce the entire pipeline without special data access;
+(2) scope discipline — adding multiple sources would have expanded the project
+beyond what was manageable while introducing alignment challenges across different
+country codes, time ranges, and update cadences. A focused project with one
+well-understood source produces more interpretable results.
+
+Decision — Why SQLite in Addition to Flat CSVs
+The raw data could have been stored only as flat CSVs. We added SQLite because:
+(1) the normalized two-table structure (countries + indicators) eliminates
+redundancy; (2) foreign key constraints prevent orphaned indicator rows;
+(3) the long-format schema naturally supports temporal queries without reshaping.
+It also provides a self-contained fallback for the Streamlit app when processed
+CSVs are not present.
+
+Decision — Why RF Baseline Beat Tuned Models and Why That Is the Correct Result
+A 100-tree default Random Forest outperforming tuned 700-tree RF and XGBoost
+initially appeared to indicate something was wrong. After analysis We concluded
+it is the correct result. The training class distribution (Severe = 22.7%) differs
+significantly from validation (Severe = 13.0%). Tuned models with class_weight=
+'balanced' had baked in the assumption that class proportions are stable — an
+assumption violated by temporal distribution shift. The baseline had no such
+assumption and generalized better. General principle: on temporally shifting data,
+simpler models with fewer distributional assumptions often outperform heavily
+tuned ones.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHAT WE WOULD DO DIFFERENTLY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Sub-national data instead of country averages
+   Country-level averages hide massive within-country inequality — urban Nigeria
+   and rural Nigeria have completely different situations folded into one number.
+   Province-level data from the Demographic and Health Surveys (DHS) would have
+   produced a far more actionable model for aid organizations.
+
+2. SHAP values for individual country explanations
+   Global feature importance tells you renewable_energy_percent matters across
+   all 218 countries. SHAP would explain why Chad specifically is Severe. We had
+   planned to add this in Milestone 2 but ran out of time. It would have been
+   the most impactful addition to the policy communication layer.
+
+3. Confidence intervals on the 2024–2027 forecasts
+   Every forecast is a point estimate. With test MAE of 4.9 percentage points,
+   a prediction of 58.3% could reasonably be 53–63%. Point predictions without
+   uncertainty ranges create false precision. Bootstrap-based confidence intervals
+   should have been part of the forecast output.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHAT WENT WELL
+━━━━━━━━━━━━━━
+
+1. Exploration caught every critical issue before modeling
+   Unnamed:69, 2024 data leakage, and the renewable energy paradox were all
+   discovered during EDA. Each was resolved before any model was trained.
+
+2. Honest evaluation throughout
+   TimeSeriesSplit CV, temporal split, reporting both validation and test metrics,
+   and explaining the COVID-driven test performance drop — all reflect scientific
+   honesty rather than optimizing for impressive headline numbers.
+
+3. The full data science cycle is traceable end-to-end
+   Raw CSV → SQLite → wrangling → analysis_ready.csv → modeling → output CSVs →
+   visualization notebook → Streamlit app. Every stage has a dedicated notebook
+   and diary entry.
+
+4. The project delivers genuinely actionable output
+   The 27-country Severe risk list, the renewable energy paradox, and the
+   governance finding are results that an international development organization
+   could act on directly.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FINAL THOUGHT
+━━━━━━━━━━━━
+The most important lesson from this project is that the decisions made before
+modeling — how to define the problem, what time period to use, which features to
+include, how to handle missing values, how to validate honestly — determine the
+quality of the final result far more than which model is chosen. Random Forest vs.
+XGBoost was a small decision. Temporal split vs. random split was a large one.
+Excluding lagged electricity was a large one. Switching to TimeSeriesSplit was a
+large one. The diary was valuable precisely because it forced articulation of why
+those decisions were made at the time they were made, not rationalized after
+seeing the results.
