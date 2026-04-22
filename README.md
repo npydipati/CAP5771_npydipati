@@ -144,12 +144,15 @@ CAP5771_npydipati/
     ├── data_acquisition (sources and relevance).txt
     ├── data_acquisition II(database storage).txt
     ├── data_exploration.txt
-    ├── reflection_and_next_steps.txt
     ├── data_wrangling.txt
     ├── data_wrangling II.txt
     ├── data_modeling.txt
     ├── data_modeling II.txt
-    └── data_visualization_static.txt
+    ├── data_visualization_static.txt
+    ├── reflection_and_next_steps.txt
+    ├── reflection_and_next_steps II.txt
+    ├── deployment.txt
+    └── final_reflection.txt
 ```
 
 ### Folders
