@@ -791,7 +791,7 @@ def page_widget_c(df):
 def page_about():
     st.title("ℹ️ About This Project")
     st.markdown("""
-## Energy Poverty Prediction — CAP5771 Milestone 3
+## Energy Poverty Prediction — CAP5771 - Introduction to Data Science
 
 **Author:** Rishitha Pydipati, Nikhitha Pydipati | **University:** University of Florida | **Course:** CAP5771 — Introduction to Data Science
 
